@@ -14,6 +14,7 @@ import { ProviderRoutes } from "./modules/provider/provider.routes";
 import { ProviderServiceRoutes } from "./modules/providerService/providerService.routes";
 import { AvailabilityRoutes } from "./modules/availability/availability.routes";
 import { ServiceRequestRoutes } from "./modules/service-request/service-request.routes";
+import { AssignmentRoutes } from "./modules/assignment/assignment.routes";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();
@@ -70,6 +71,7 @@ app.use("/api/v1/providers", ProviderRoutes);
 app.use("/api/v1/provider-services", ProviderServiceRoutes);
 app.use("/api/v1/availability", AvailabilityRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
+app.use("/api/v1/assignments", AssignmentRoutes);
 
 
 app.use(globalErrorHandler);
