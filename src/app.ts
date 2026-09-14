@@ -10,6 +10,7 @@ import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { AuthRoutes } from "./modules/auth/auth.route";
 import { CategoryRoutes } from "./modules/category/category.routes";
 import { ServiceRoutes } from "./modules/service/service.routes";
+import { ProviderRoutes } from "./modules/provider/provider.routes";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();
@@ -62,6 +63,7 @@ app.get("/", async (req: Request, res: Response) => {
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
+app.use("/api/v1/providers", ProviderRoutes);
 
 
 app.use(globalErrorHandler);
