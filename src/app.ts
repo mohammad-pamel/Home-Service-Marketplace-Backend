@@ -12,6 +12,7 @@ import { CategoryRoutes } from "./modules/category/category.routes";
 import { ServiceRoutes } from "./modules/service/service.routes";
 import { ProviderRoutes } from "./modules/provider/provider.routes";
 import { ProviderServiceRoutes } from "./modules/providerService/providerService.routes";
+import { AvailabilityRoutes } from "./modules/availability/availability.routes";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();
@@ -66,6 +67,7 @@ app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/providers", ProviderRoutes);
 app.use("/api/v1/provider-services", ProviderServiceRoutes);
+app.use("/api/v1/availability", AvailabilityRoutes);
 
 
 app.use(globalErrorHandler);
