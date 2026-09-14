@@ -4,11 +4,680 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+//generator client {
+//provider = "prisma-client"
+//output   = "../src/generated/prisma"
+//}
+
+//datasource db {
+//provider = "postgresql"
+//}
+
 generator client {
   provider = "prisma-client"
-  output   = "../../src/generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ===============================
+// ENUMS
+// ===============================
+
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+}
+
+enum AuthProvider {
+  GOOGLE
+  CREDENTIAL
+}
+
+
+enum ServiceRequestStatus {
+  PENDING
+  MATCHED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  STRIPE
+  BKASH
+  SSLCOMMERZ
+}
+
+enum PaymentMethod {
+  CARD
+  MOBILE_BANKING
+  ONLINE_PAYMENT
+}
+
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+}
+
+enum NotificationType {
+  REQUEST
+  BOOKING
+  PAYMENT
+  REVIEW
+  SYSTEM
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+// ===============================
+// USER
+// ===============================
+
+model User {
+  id       String     @id @default(uuid())
+  name     String
+  email    String     @unique
+  password String?
+  googleId           String?      @unique
+  authProvider       AuthProvider @default(CREDENTIAL)
+  phone    String?
+  role     Role       @default(CUSTOMER)
+  status   UserStatus @default(ACTIVE)
+
+  profileImage String?
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  serviceProviderProfile ServiceProviderProfile?
+
+  serviceRequests ServiceRequest[]
+
+  bookings           Booking[] @relation("CustomerBookings")
+  bookingsAsProvider Booking[] @relation("ProviderBookings")
+
+  assignments Assignment[] @relation("ProviderAssignments")
+
+  reviewsGiven    Review[] @relation("ReviewsGiven")
+  reviewsReceived Review[] @relation("ReviewsReceived")
+
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  customer Customer?
+
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+
+
+model Customer {
+  id String @id @default(uuid(7))
+
+  name          String
+  email         String    @unique
+  contactNumber String?
+  address       String?
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  //relations
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+
+  
+  @@index([email], name: "idx_customer_email")
+  @@index([isDeleted], name: "idx_customer_isDeleted")
+  @@map("customers")
+}
+
+
+
+// ===============================
+// SERVICE PROVIDER PROFILE
+// ===============================
+
+model ServiceProviderProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio             String?
+  experienceYears Int     @default(0)
+
+  isVerified Boolean @default(false)
+
+  rating       Float @default(0)
+  totalReviews Int   @default(0)
+  totalJobs    Int   @default(0)
+
+  serviceArea String?
+
+  latitude  Float?
+  longitude Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  services     ProviderService[]
+  availability Availability[]
+}
+
+
+
+// ===============================
+// SERVICE CATEGORY
+// ===============================
+
+model ServiceCategory {
+  id String @id @default(uuid())
+
+  name        String
+  slug        String  @unique
+  description String?
+  image       String?
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  services Service[]
+
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+// ===============================
+// SERVICE
+// ===============================
+
+model Service {
+  id String @id @default(uuid())
+
+  categoryId String
+  category   ServiceCategory @relation(fields: [categoryId], references: [id])
+
+  name        String
+  slug        String  @unique
+  description String?
+
+  basePrice Decimal @db.Decimal(12, 2)
+
+  durationMinutes Int?
+
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  providers ProviderService[]
+  requests  ServiceRequest[]
+
+  @@index([categoryId])
+  @@index([name])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+// ===============================
+// PROVIDER ↔ SERVICE
+// ===============================
+
+model ProviderService {
+  id String @id @default(uuid())
+
+  providerId String
+  provider   ServiceProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  price Decimal? @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+
+  @@unique([providerId, serviceId])
+  @@index([providerId])
+  @@index([serviceId])
+}
+
+// ===============================
+// LOCATION
+// ===============================
+
+model Location {
+  id String @id @default(uuid())
+
+  address String
+  city    String?
+  area    String?
+
+  latitude  Float?
+  longitude Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceRequests ServiceRequest[]
+  bookings        Booking[]
+}
+
+// ===============================
+// SERVICE REQUEST
+// ===============================
+
+model ServiceRequest {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   User   @relation(fields: [customerId], references: [id])
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  title       String
+  description String
+
+  preferredDate DateTime?
+  preferredTime String?
+
+  status ServiceRequestStatus @default(PENDING)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  assignments Assignment[]
+  booking     Booking?
+  attachments Attachment[]
+
+  @@index([customerId])
+  @@index([serviceId])
+  @@index([locationId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+// ===============================
+// PROVIDER ASSIGNMENT
+// ===============================
+
+model Assignment {
+  id String @id @default(uuid())
+
+  serviceRequestId String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  providerId String
+  provider   User   @relation("ProviderAssignments", fields: [providerId], references: [id])
+
+  status AssignmentStatus @default(PENDING)
+
+  assignedAt  DateTime  @default(now())
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([serviceRequestId, providerId])
+  @@index([providerId])
+  @@index([status])
+}
+
+// ===============================
+// BOOKING
+// ===============================
+
+model Booking {
+  id String @id @default(uuid())
+
+  serviceRequestId String         @unique
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id])
+
+  customerId String
+  customer   User   @relation("CustomerBookings", fields: [customerId], references: [id])
+
+  providerId String
+  provider   User   @relation("ProviderBookings", fields: [providerId], references: [id])
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  scheduledAt DateTime
+
+  status BookingStatus @default(PENDING)
+
+  totalAmount Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  estimate Estimate?
+  invoice  Invoice?
+  payments Payment[]
+  workLogs WorkLog[]
+  review   Review?
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+// ===============================
+// PROVIDER AVAILABILITY
+// ===============================
+
+model Availability {
+  id String @id @default(uuid())
+
+  providerId String
+  provider   ServiceProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int
+
+  startTime String
+  endTime   String
+
+  isAvailable Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
+  @@index([dayOfWeek])
+}
+
+// ===============================
+// ESTIMATE
+// ===============================
+
+model Estimate {
+  id String @id @default(uuid())
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  subtotal Decimal @db.Decimal(12, 2)
+  tax      Decimal @default(0) @db.Decimal(12, 2)
+  discount Decimal @default(0) @db.Decimal(12, 2)
+  total    Decimal @db.Decimal(12, 2)
+
+  status EstimateStatus @default(DRAFT)
+
+  notes String?
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items EstimateItem[]
+}
+
+// ===============================
+// ESTIMATE ITEM
+// ===============================
+
+model EstimateItem {
+  id String @id @default(uuid())
+
+  estimateId String
+  estimate   Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+
+  description String
+
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(12, 2)
+  total     Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([estimateId])
+}
+
+// ===============================
+// WORK LOG
+// ===============================
+
+model WorkLog {
+  id String @id @default(uuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  attachments Attachment[]
+
+  @@index([bookingId])
+}
+
+// ===============================
+// ATTACHMENT
+// ===============================
+
+model Attachment {
+  id String @id @default(uuid())
+
+  serviceRequestId String?
+  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  workLogId String?
+  workLog   WorkLog? @relation(fields: [workLogId], references: [id], onDelete: Cascade)
+
+  url      String
+  publicId String?
+  fileName String?
+  mimeType String?
+
+  createdAt DateTime @default(now())
+
+  @@index([serviceRequestId])
+  @@index([workLogId])
+}
+
+// ===============================
+// INVOICE
+// ===============================
+
+model Invoice {
+  id String @id @default(uuid())
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  invoiceNumber String @unique
+
+  subtotal Decimal @db.Decimal(12, 2)
+  tax      Decimal @default(0) @db.Decimal(12, 2)
+  discount Decimal @default(0) @db.Decimal(12, 2)
+  total    Decimal @db.Decimal(12, 2)
+
+  issuedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===============================
+// PAYMENT
+// ===============================
+
+model Payment {
+  id String @id @default(uuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  transactionId String @unique
+
+  provider PaymentProvider
+  method   PaymentMethod
+
+  amount Decimal @db.Decimal(12, 2)
+
+  status PaymentStatus @default(PENDING)
+
+  gatewayResponse Json?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+}
+
+// ===============================
+// REVIEW
+// ===============================
+
+model Review {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   User   @relation("ReviewsGiven", fields: [customerId], references: [id])
+
+  providerId String
+  provider   User   @relation("ReviewsReceived", fields: [providerId], references: [id])
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  rating  Int
+  comment String?
+
+  status ReviewStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
+  @@index([customerId])
+  @@index([rating])
+}
+
+// ===============================
+// NOTIFICATION
+// ===============================
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  title   String
+  message String
+
+  status NotificationStatus @default(UNREAD)
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ===============================
+// AUDIT LOG
+// ===============================
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action   String
+  entity   String
+  entityId String?
+
+  oldData Json?
+  newData Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
 }
