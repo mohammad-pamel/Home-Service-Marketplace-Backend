@@ -3,7 +3,6 @@ import cors from "cors";
 import express, { Application, NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import config from "./config";
-// import { AuthRoutes } from "./module/auth/auth.route";
 import { success } from "zod";
 import { notFound } from "./middlewares/notFound";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
@@ -15,6 +14,11 @@ import { ProviderServiceRoutes } from "./modules/providerService/providerService
 import { AvailabilityRoutes } from "./modules/availability/availability.routes";
 import { ServiceRequestRoutes } from "./modules/service-request/service-request.routes";
 import { AssignmentRoutes } from "./modules/assignment/assignment.routes";
+import { BookingRoutes } from "./modules/booking/booking.routes";
+import { EstimateRoutes } from "./modules/estimate/estimate.routes";
+import { PaymentRoutes } from "./modules/payment/payment.routes";
+import { WorkLogRoutes } from "./modules/work-log/work-log.routes";
+import { ReviewRoutes } from "./modules/review/review.routes";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();
@@ -72,6 +76,11 @@ app.use("/api/v1/provider-services", ProviderServiceRoutes);
 app.use("/api/v1/availability", AvailabilityRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
 app.use("/api/v1/assignments", AssignmentRoutes);
+app.use("/api/v1/bookings", BookingRoutes);
+app.use("/api/v1/estimates", EstimateRoutes);
+app.use("/api/v1/payments", PaymentRoutes);
+app.use("/api/v1/work-logs", WorkLogRoutes);
+app.use("/api/v1/reviews", ReviewRoutes);
 
 
 app.use(globalErrorHandler);
