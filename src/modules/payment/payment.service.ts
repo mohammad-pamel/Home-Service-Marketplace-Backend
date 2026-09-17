@@ -90,7 +90,7 @@ const createPayment = async (
     );
 
   if (existingSuccessfulPayment) {
-     throw new Error("Payment has already been completed");
+    throw new Error("Payment has already been completed");
     // throw new AppError(
     //   httpStatus.BAD_REQUEST,
     //   "Payment has already been completed",
@@ -105,7 +105,7 @@ const createPayment = async (
     );
 
   if (existingPendingPayment) {
-     throw new Error("A pending bKash payment already exists for this booking");
+    throw new Error("A pending bKash payment already exists for this booking");
     // throw new AppError(
     //   httpStatus.BAD_REQUEST,
     //   "A pending bKash payment already exists for this booking",
@@ -115,7 +115,7 @@ const createPayment = async (
   const amount = Number(booking.estimate.total);
 
   if (!amount || amount <= 0) {
-     throw new Error("Invalid payment amount");
+    throw new Error("Invalid payment amount");
     // throw new AppError(
     //   httpStatus.BAD_REQUEST,
     //   "Invalid payment amount",
@@ -123,7 +123,7 @@ const createPayment = async (
   }
 
   if (payload.provider !== "BKASH") {
-     throw new Error("Currently only bKash payment is available");
+    throw new Error("Currently only bKash payment is available");
     // throw new AppError(
     //   httpStatus.BAD_REQUEST,
     //   "Currently only bKash payment is available",
@@ -142,7 +142,7 @@ const createPayment = async (
 
   const callbackURL =
     `${config.bkash_callback_url}` +
-    `/api/v1/payments/bkash/callback`;
+    `/payments/bkash/callback`;
 
   const response = await fetch(
     `${config.bkash_base_url}/tokenized/checkout/create`,
@@ -169,7 +169,7 @@ const createPayment = async (
   const result = await response.json();
 
   if (!response.ok) {
-     throw new Error("Bkash payment creation failed");
+    throw new Error("Bkash payment creation failed");
     // throw new AppError(
     //   httpStatus.BAD_GATEWAY,
     //   result?.statusMessage ||
@@ -182,7 +182,7 @@ const createPayment = async (
     !result?.paymentID ||
     !result?.bkashURL
   ) {
-     throw new Error("Invalid response from bKash");
+    throw new Error("Invalid response from bKash");
     // throw new AppError(
     //   httpStatus.BAD_GATEWAY,
     //   result?.statusMessage ||
@@ -376,21 +376,157 @@ const updatePaymentStatus = async (
   return updatedPayment;
 };
 
+// const handleBkashCallback = async (
+//   paymentID: string,
+//   status: string,
+// ) => {
+//   if (!paymentID) {
+//     // throw new AppError(
+//     //   httpStatus.BAD_REQUEST,
+//     //   "bKash paymentID is required",
+//     // );
+//     throw new Error("bKash paymentID is required");
+//   }
+
+//   const payment = await prisma.payment.findFirst({
+//     where: {
+//       //  transactionId: paymentID,
+//       bkashPaymentId: paymentID,
+//       provider: "BKASH",
+//     },
+//     include: {
+//       booking: true,
+//     },
+//   });
+
+//   if (!payment) {
+//     // throw new AppError(
+//     //   httpStatus.NOT_FOUND,
+//     //   "Payment record not found",
+//     // );
+//     throw new Error("Payment record not found");
+//   }
+
+//   // Already successfully paid
+//   if (payment.status === "SUCCESS") {
+//     return {
+//       success: true,
+//       message: "Payment already completed",
+//       paymentId: payment.id,
+//       bookingId: payment.bookingId,
+//     };
+//   }
+
+//   // User cancelled from bKash
+//   if (status === "cancel") {
+//     await prisma.payment.update({
+//       where: {
+//         id: payment.id,
+//       },
+//       data: {
+//         status: "CANCELLED",
+//       },
+//     });
+
+//     return {
+//       success: false,
+//       message: "Payment cancelled by customer",
+//       paymentId: payment.id,
+//       bookingId: payment.bookingId,
+//     };
+//   }
+
+//   // bKash callback status is failure
+//   if (status === "failure") {
+//     await prisma.payment.update({
+//       where: {
+//         id: payment.id,
+//       },
+//       data: {
+//         status: "FAILED",
+//       },
+//     });
+
+//     return {
+//       success: false,
+//       message: "Payment failed",
+//       paymentId: payment.id,
+//       bookingId: payment.bookingId,
+//     };
+//   }
+
+//   // Execute payment
+//   const executedPayment = await executeBkashPayment(paymentID);
+
+//   // bKash successful response
+//   if (
+//     executedPayment?.statusCode === "0000" &&
+//     executedPayment?.transactionStatus === "Completed"
+//   ) {
+//     const trxID = executedPayment?.trxID;
+
+//     if (!trxID) {
+//       // throw new AppError(
+//       //   httpStatus.BAD_GATEWAY,
+//       //   "bKash transaction ID not found",
+//       // );
+//       throw new Error("bKash transaction ID not found");
+//     }
+
+//     const updatedPayment = await prisma.payment.update({
+//       where: {
+//         id: payment.id,
+//       },
+//       data: {
+//         // transactionId: trxID,
+//         bkashTrxId: trxID,
+//         status: "SUCCESS",
+//         paidAt: new Date(),
+//         gatewayResponse: executedPayment,
+//       },
+//     });
+
+//     return {
+//       success: true,
+//       message: "Payment completed successfully",
+//       payment: updatedPayment,
+//     };
+//   }
+
+//   // Execution response indicates failure
+//   const failedPayment = await prisma.payment.update({
+//     where: {
+//       id: payment.id,
+//     },
+//     data: {
+//       status: "FAILED",
+//       gatewayResponse: executedPayment,
+//     },
+//   });
+
+//   return {
+//     success: false,
+//     message:
+//       executedPayment?.statusMessage || "Payment execution failed",
+//     payment: failedPayment,
+//   };
+// };
+
+
 const handleBkashCallback = async (
   paymentID: string,
   status: string,
 ) => {
   if (!paymentID) {
+    throw new Error("bKash paymentID is required");
     // throw new AppError(
     //   httpStatus.BAD_REQUEST,
     //   "bKash paymentID is required",
     // );
-    throw new Error("bKash paymentID is required");
   }
 
   const payment = await prisma.payment.findFirst({
     where: {
-      //  transactionId: paymentID,
       bkashPaymentId: paymentID,
       provider: "BKASH",
     },
@@ -400,14 +536,14 @@ const handleBkashCallback = async (
   });
 
   if (!payment) {
+    throw new Error("bKash payment record not found");
     // throw new AppError(
     //   httpStatus.NOT_FOUND,
-    //   "Payment record not found",
+    //   "bKash payment record not found",
     // );
-    throw new Error("Payment record not found");
   }
 
-  // Already successfully paid
+  // Idempotency
   if (payment.status === "SUCCESS") {
     return {
       success: true,
@@ -417,100 +553,148 @@ const handleBkashCallback = async (
     };
   }
 
-  // User cancelled from bKash
+  // Customer cancelled payment
   if (status === "cancel") {
-    await prisma.payment.update({
-      where: {
-        id: payment.id,
-      },
-      data: {
-        status: "CANCELLED",
-      },
-    });
+    const cancelledPayment =
+      await prisma.payment.update({
+        where: {
+          id: payment.id,
+        },
+        data: {
+          status: "CANCELLED",
+        },
+      });
 
     return {
       success: false,
       message: "Payment cancelled by customer",
-      paymentId: payment.id,
-      bookingId: payment.bookingId,
+      payment: cancelledPayment,
     };
   }
 
-  // bKash callback status is failure
+  // bKash reported failure
   if (status === "failure") {
-    await prisma.payment.update({
-      where: {
-        id: payment.id,
-      },
-      data: {
-        status: "FAILED",
-      },
-    });
+    const failedPayment =
+      await prisma.payment.update({
+        where: {
+          id: payment.id,
+        },
+        data: {
+          status: "FAILED",
+        },
+      });
 
     return {
       success: false,
       message: "Payment failed",
-      paymentId: payment.id,
-      bookingId: payment.bookingId,
+      payment: failedPayment,
     };
   }
 
-  // Execute payment
-  const executedPayment = await executeBkashPayment(paymentID);
+  // Execute payment with bKash
+  const executedPayment =
+    await executeBkashPayment(paymentID);
 
-  // bKash successful response
-  if (
+  const isSuccess =
     executedPayment?.statusCode === "0000" &&
-    executedPayment?.transactionStatus === "Completed"
-  ) {
-    const trxID = executedPayment?.trxID;
+    executedPayment?.transactionStatus ===
+      "Completed";
 
-    if (!trxID) {
-      // throw new AppError(
-      //   httpStatus.BAD_GATEWAY,
-      //   "bKash transaction ID not found",
-      // );
-      throw new Error("bKash transaction ID not found");
-    }
-
-    const updatedPayment = await prisma.payment.update({
-      where: {
-        id: payment.id,
-      },
-      data: {
-        // transactionId: trxID,
-        bkashTrxId: trxID,
-        status: "SUCCESS",
-        paidAt: new Date(),
-        gatewayResponse: executedPayment,
-      },
-    });
+  if (!isSuccess) {
+    const failedPayment =
+      await prisma.payment.update({
+        where: {
+          id: payment.id,
+        },
+        data: {
+          status: "FAILED",
+          gatewayResponse: executedPayment,
+        },
+      });
 
     return {
-      success: true,
-      message: "Payment completed successfully",
-      payment: updatedPayment,
+      success: false,
+      message:
+        executedPayment?.statusMessage ||
+        "Payment execution failed",
+      payment: failedPayment,
     };
   }
 
-  // Execution response indicates failure
-  const failedPayment = await prisma.payment.update({
+  const trxID = executedPayment?.trxID;
+
+  if (!trxID) {
+    throw new Error("bKash transaction ID was not returned");
+    // throw new AppError(
+    //   httpStatus.BAD_GATEWAY,
+    //   "bKash transaction ID was not returned",
+    // );
+  }
+
+  // Verify merchant invoice
+  if (
+    executedPayment?.merchantInvoiceNumber !==
+    payment.merchantInvoiceNumber
+  ) {
+    throw new Error("Payment invoice verification failed");
+    // throw new AppError(
+    //   httpStatus.BAD_GATEWAY,
+    //   "Payment invoice verification failed",
+    // );
+  }
+
+  // Verify amount
+  const executedAmount = Number(
+    executedPayment?.amount,
+  );
+
+  if (
+    !Number.isNaN(executedAmount) &&
+    executedAmount !== Number(payment.amount)
+  ) {
+    throw new Error("Payment amount verification failed");
+    // throw new AppError(
+    //   httpStatus.BAD_GATEWAY,
+    //   "Payment amount verification failed",
+    // );
+  }
+
+ const result = await prisma.$transaction(async (tx) => {
+  const updatedPayment = await tx.payment.update({
     where: {
       id: payment.id,
     },
     data: {
-      status: "FAILED",
+      status: "SUCCESS",
+      bkashTrxId: trxID,
+      paidAt: new Date(),
       gatewayResponse: executedPayment,
     },
   });
 
+  const updatedBooking = await tx.booking.update({
+    where: {
+      id: payment.bookingId,
+    },
+    data: {
+      status: "CONFIRMED",
+    },
+  });
+
   return {
-    success: false,
-    message:
-      executedPayment?.statusMessage || "Payment execution failed",
-    payment: failedPayment,
+    updatedPayment,
+    updatedBooking,
   };
+});
+
+return {
+  success: true,
+  message: "Payment completed successfully",
+  payment: result.updatedPayment,
+  booking: result.updatedBooking,
 };
+};
+
 
 export const PaymentService = {
   createPayment,
