@@ -128,11 +128,14 @@ model User {
   password String?
   googleId           String?      @unique
   authProvider       AuthProvider @default(CREDENTIAL)
+  emailVerified      Boolean      @default(false)
   phone    String?
   role     Role       @default(CUSTOMER)
   status   UserStatus @default(ACTIVE)
+  needPasswordChange Boolean      @default(false)
+  imageUrl           String       @default("")
+  imagePublicId      String       @default("")
 
-  profileImage String?
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -573,20 +576,25 @@ model Invoice {
 // PAYMENT
 // ===============================
 
+
+
 model Payment {
   id String @id @default(uuid())
 
   bookingId String
-  booking   Booking @relation(fields: [bookingId], references: [id])
-
-  transactionId String @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   provider PaymentProvider
   method   PaymentMethod
 
-  amount Decimal @db.Decimal(12, 2)
+  amount   Decimal @db.Decimal(12, 2)
+  status   PaymentStatus @default(PENDING)
 
-  status PaymentStatus @default(PENDING)
+  // bKash specific information
+  merchantInvoiceNumber String? @unique
+  bkashPaymentId        String? @unique
+  bkashTrxId             String? @unique
+  payerReference         String?
 
   gatewayResponse Json?
 
@@ -595,7 +603,7 @@ model Payment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([bookingId])
+   @@index([bookingId])
   @@index([status])
   @@index([provider])
   @@index([createdAt])

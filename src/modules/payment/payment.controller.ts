@@ -1,5 +1,6 @@
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { IBkashCallbackQuery } from "./payment.interface";
 import { PaymentService } from "./payment.service";
 
 const createPayment = catchAsync(
@@ -81,9 +82,52 @@ const updatePaymentStatus = catchAsync(
   },
 );
 
+const bkashCallback = catchAsync(
+  async (req, res) => {
+    const { paymentID, status } =
+      req.query as IBkashCallbackQuery;
+
+    const result =
+      await PaymentService.handleBkashCallback(
+        paymentID as string,
+        status as string,
+      );
+
+    if (result.success) {
+      // return res.status(httpStatus.OK).json({
+      //   success: true,
+      //   message: result.message,
+      //   data: result,
+      // });
+
+      sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: result.message,
+        data: result,
+      });
+    }
+
+    // return res.status(httpStatus.OK).json({
+    //   success: false,
+    //   message: result.message,
+    //   data: result,
+    // });
+
+    sendResponse(res, {
+      statusCode: 500,
+      success: true,
+      message: result.message,
+      data: result,
+    });
+
+  },
+);
+
 export const PaymentController = {
   createPayment,
   getMyPayments,
   getPaymentById,
   updatePaymentStatus,
+  bkashCallback
 };

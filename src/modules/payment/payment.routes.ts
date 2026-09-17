@@ -23,10 +23,16 @@ router.get(
 );
 
 router.get(
+  "/bkash/callback",
+  PaymentController.bkashCallback,
+);
+
+router.get(
   "/:id",
   auth(Role.CUSTOMER, Role.PROVIDER),
   PaymentController.getPaymentById,
 );
+
 
 router.patch(
   "/:id/status",
@@ -36,5 +42,7 @@ router.patch(
   ),
   PaymentController.updatePaymentStatus,
 );
+
+
 
 export const PaymentRoutes = router;

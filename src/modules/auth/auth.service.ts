@@ -205,7 +205,7 @@ const updateMyProfile = async (userId: string, payload: IUpdateProfilePayload) =
             data: { 
                 name: payload.name, 
                 phone: payload.phone, 
-                profileImage: payload.profileImage, 
+                imageUrl: payload.imageUrl, 
             }, 
             omit: { 
                 password: true, 
