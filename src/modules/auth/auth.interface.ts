@@ -6,6 +6,9 @@ export interface IRegisterUserPayload {
   password: string;
   phone: string;
   role?: Role;
+  customer: {
+		contactNumber?: string;
+	};
 }
 
 export interface IVerifyEmailPayload {
