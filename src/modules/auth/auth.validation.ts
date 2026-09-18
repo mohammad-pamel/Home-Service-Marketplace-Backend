@@ -39,6 +39,11 @@ const RegisterUserZodSchema = z.object({
         .optional(),
 });
 
+const CustomerEmailVerifyZodSchema = z.object({
+	email: z.email("Not email!!"),
+	otp: z.string().length(6),
+});
+
 const LoginZodSchema = z.object({
     email: z.email("Invalid email address"),
 
@@ -92,6 +97,7 @@ const ResetPasswordZodSchema = z.object({
 
 export const AuthValidation = {
     RegisterUserZodSchema,
+    CustomerEmailVerifyZodSchema,
     LoginZodSchema,
     UpdateProfileZodSchema,
     RefreshTokenZodSchema,
