@@ -1,6 +1,4 @@
-অবশ্যই। নিচেরটা **পুরো `README.md` হিসেবে সরাসরি copy-paste** করতে পারো।
 
-````md
 # Home Service Marketplace Backend
 
 A scalable and secure RESTful backend API for a **Home Service Marketplace** where customers can request home services, providers can accept and manage service jobs, and administrators can manage the overall platform.
@@ -16,6 +14,13 @@ https://home-service-marketplace-backend.vercel.app/
 
 **API Base URL:**  
 https://home-service-marketplace-backend.vercel.app/api/v1
+
+---
+
+## 🔐 Admin Credentials
+
+- **Email:** admin@test.com  
+- **Password:** Admin@123
 
 ---
 
@@ -1643,7 +1648,4 @@ Home Service Marketplace Backend Project
 # 📄 License
 
 This project was developed for educational and software engineering purposes.
-
-````
-
 
