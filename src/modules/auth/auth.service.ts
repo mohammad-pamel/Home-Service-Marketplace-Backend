@@ -216,7 +216,7 @@ const registerUser = async (payload: IRegisterUserPayload) => {
 
      const templatePath = path.join(
         process.cwd(),
-        "src/templates/welcome-email.ejs",
+        "src/templates/registration-user-otp.ejs",
     );
 
     const templateData = {
