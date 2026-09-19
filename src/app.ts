@@ -19,6 +19,7 @@ import { EstimateRoutes } from "./modules/estimate/estimate.routes";
 import { PaymentRoutes } from "./modules/payment/payment.routes";
 import { WorkLogRoutes } from "./modules/work-log/work-log.routes";
 import { ReviewRoutes } from "./modules/review/review.routes";
+import { UserRoutes } from "./modules/user/user.interface";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();
@@ -69,6 +70,7 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/auth", AuthRoutes);
+app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/providers", ProviderRoutes);
