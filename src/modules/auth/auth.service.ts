@@ -700,7 +700,7 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 
     const expirationSeconds = 5 * 60
 
-    const tempatePath = path.join(process.cwd(), "src/app/templates/forgot-password.ejs");
+    const tempatePath = path.join(process.cwd(), "src/templates/forgot-password.ejs");
 
     // const html = await ejs.renderFile(tempatePath, {
     // 	OTP: otp
@@ -785,7 +785,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
 
 
 
-    const tempatePath = path.join(process.cwd(), "src/app/templates/reset-password-success.ejs");
+    const tempatePath = path.join(process.cwd(), "src/templates/reset-password-success.ejs");
 
     // const html = await ejs.renderFile(tempatePath, {
     // 	OTP: otp
