@@ -40,6 +40,20 @@ router.get(
   ProviderController.getAllProviders,
 );
 
+
+router.patch(
+  "/:id/verify",
+  auth(Role.ADMIN),
+  ProviderController.verifyProvider,
+);
+
+router.patch(
+  "/:id/unverify",
+  auth(Role.ADMIN),
+  ProviderController.unverifyProvider,
+);
+
+
 // Public: Get provider by ID
 router.get(
   "/:id",

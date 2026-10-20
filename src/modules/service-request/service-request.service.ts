@@ -274,10 +274,55 @@ const cancelServiceRequest = async (
   return cancelledRequest;
 };
 
+
+const getAllServiceRequests = async () => {
+  const requests = await prisma.serviceRequest.findMany({
+    where: {
+      deletedAt: null,
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      service: {
+        include: {
+          category: true,
+        },
+      },
+      location: true,
+      assignments: {
+        include: {
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      },
+      booking: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return requests;
+};
+
+
 export const ServiceRequestService = {
   createServiceRequest,
   getMyServiceRequests,
   getServiceRequestById,
   updateServiceRequest,
   cancelServiceRequest,
+  getAllServiceRequests
 };

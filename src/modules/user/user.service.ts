@@ -2,6 +2,29 @@ import type { UploadApiResponse } from "cloudinary";
 import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 
+const getAllUsers = async () => {
+  const users =
+    await prisma.user.findMany({
+      where: {
+        // user: {
+          deletedAt: null,
+        //   status: "ACTIVE",
+        // },
+      },
+    //   include: {
+         omit: {
+            password: true,
+          },
+    //   },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+
+  return users;
+};
+
 const uploadProfileImage = async (buffer: Buffer, userId: string) => {
 
 	const currentUser = await prisma.user.findUnique({
@@ -62,4 +85,5 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
 
 export const UserServices = {
 	uploadProfileImage,
+	getAllUsers
 };

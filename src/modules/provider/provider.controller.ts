@@ -87,10 +87,52 @@ const getProviderById = catchAsync(
   },
 );
 
+
+const verifyProvider = catchAsync(
+  async (req: Request, res: Response) => {
+    const providerId = req.params.id as string;
+
+    const result =
+      await ProviderService.updateProviderVerification(
+        providerId,
+        true,
+      );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Provider verified successfully",
+      data: result,
+    });
+  },
+);
+
+const unverifyProvider = catchAsync(
+  async (req: Request, res: Response) => {
+    const providerId = req.params.id as string;
+
+    const result =
+      await ProviderService.updateProviderVerification(
+        providerId,
+        false,
+      );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Provider verification removed successfully",
+      data: result,
+    });
+  },
+);
+
+
 export const ProviderController = {
   createProviderProfile,
   getMyProviderProfile,
   updateMyProviderProfile,
   getAllProviders,
   getProviderById,
+  verifyProvider,
+  unverifyProvider
 };

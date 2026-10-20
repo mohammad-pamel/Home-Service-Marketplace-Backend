@@ -19,7 +19,7 @@ import { EstimateRoutes } from "./modules/estimate/estimate.routes";
 import { PaymentRoutes } from "./modules/payment/payment.routes";
 import { WorkLogRoutes } from "./modules/work-log/work-log.routes";
 import { ReviewRoutes } from "./modules/review/review.routes";
-import { UserRoutes } from "./modules/user/user.interface";
+import { UserRoutes } from "./modules/user/user.routes";
 // import { redisClient } from "./lib/redis";
 
 const app: Application = express();

@@ -6,6 +6,22 @@ import { sendResponse } from "../../utils/sendResponse";
 import { AppError } from "../../utils/appError";
 import { UserServices } from "./user.service";
 
+const getAllUsers = catchAsync(
+  async (req: Request, res: Response) => {
+	const result =
+	  await UserServices.getAllUsers();
+
+	  console.log("result", result)
+
+	sendResponse(res, {
+	  statusCode: 200,
+	  success: true,
+	  message: "Users retrieved successfully",
+	  data: result,
+	});
+  },
+);
+
 const uploadProfileImage = catchAsync(async (req: Request, res: Response) => {
 	if (!req.file) {
 		throw new AppError(httpStatus.BAD_REQUEST, "No File Provided.");
@@ -27,4 +43,5 @@ const uploadProfileImage = catchAsync(async (req: Request, res: Response) => {
 
 export const UserController = {
 	uploadProfileImage,
+	getAllUsers
 };

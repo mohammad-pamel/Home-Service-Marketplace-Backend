@@ -88,10 +88,26 @@ const cancelServiceRequest = catchAsync(async (req, res) => {
   });
 });
 
+
+
+const getAllServiceRequests = catchAsync(async (_req, res) => {
+  const result =
+    await ServiceRequestService.getAllServiceRequests();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All service requests retrieved successfully",
+    data: result,
+  });
+});
+
+
 export const ServiceRequestController = {
   createServiceRequest,
   getMyServiceRequests,
   getServiceRequestById,
   updateServiceRequest,
   cancelServiceRequest,
+  getAllServiceRequests
 };

@@ -43,4 +43,10 @@ router.patch(
   ServiceRequestController.cancelServiceRequest,
 );
 
+router.get(
+  "/",
+  auth(Role.ADMIN),
+  ServiceRequestController.getAllServiceRequests,
+);
+
 export const ServiceRequestRoutes = router;

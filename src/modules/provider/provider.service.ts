@@ -162,10 +162,46 @@ const getProviderById = async (providerId: string) => {
   return provider;
 };
 
+
+const updateProviderVerification = async (
+  providerId: string,
+  isVerified: boolean,
+) => {
+  const provider = await prisma.serviceProviderProfile.findUnique({
+    where: {
+      id: providerId,
+    },
+  });
+
+  if (!provider) {
+    throw new Error("Provider not found");
+  }
+
+  const updatedProvider = await prisma.serviceProviderProfile.update({
+    where: {
+      id: providerId,
+    },
+    data: {
+      isVerified,
+    },
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
+
+  return updatedProvider;
+};
+
+
 export const ProviderService = {
   createProviderProfile,
   getMyProviderProfile,
   updateMyProviderProfile,
   getAllProviders,
   getProviderById,
+  updateProviderVerification
 };

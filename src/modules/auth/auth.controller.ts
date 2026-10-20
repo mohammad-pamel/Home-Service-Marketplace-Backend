@@ -6,6 +6,7 @@ import { sendResponse } from "../../utils/sendResponse";
 
 import { AuthService } from "./auth.service";
 import { AuthValidation } from "./auth.validation";
+import config from "../../config";
 
 // const registerUser = catchAsync(
 //     async (req: Request, res: Response) => {
@@ -51,74 +52,75 @@ import { AuthValidation } from "./auth.validation";
 // );
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
-	// const payload = PatientValidation.PatientRegistrationZodSchema.safeParse(req.body);
+    // const payload = PatientValidation.PatientRegistrationZodSchema.safeParse(req.body);
 
-	// if(!payload.success){
-	// 	console.log(payload.error);
-	// 	console.log(payload.error.issues);
+    // if(!payload.success){
+    // 	console.log(payload.error);
+    // 	console.log(payload.error.issues);
 
-	// 	throw new Error(payload.error.issues[0].message)
-	// }
+    // 	throw new Error(payload.error.issues[0].message)
+    // }
 
-	// console.log(payload);
+    // console.log(payload);
 
-	const payload = req.body;
+    const payload = req.body;
 
-	await AuthService.registerUser(payload);
+    await AuthService.registerUser(payload);
 
-	// const { accessToken, refreshToken, user, patient } = result;
+    // const { accessToken, refreshToken, user, patient } = result;
 
-	// res.cookie("accessToken", accessToken, {
-	// 	httpOnly: true,
-	// 	secure: false,
-	// 	sameSite: "none",
-	// 	maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	// });
-	// res.cookie("refreshToken", refreshToken, {
-	// 	httpOnly: true,
-	// 	secure: false,
-	// 	sameSite: "none",
-	// 	maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	// });
+    // res.cookie("accessToken", accessToken, {
+    // 	httpOnly: true,
+    // 	secure: false,
+    // 	sameSite: "none",
+    // 	maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+    // });
+    // res.cookie("refreshToken", refreshToken, {
+    // 	httpOnly: true,
+    // 	secure: false,
+    // 	sameSite: "none",
+    // 	maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    // });
 
-	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
-		success: true,
-		message: "Verification OTP Sent",
-		data: null,
-	});
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: "Verification OTP Sent",
+        data: null,
+    });
 });
+
 const verifyCustomerEmail = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+    const payload = req.body;
 
-	const result = await AuthService.verifyCustomerEmail(payload);
+    const result = await AuthService.verifyCustomerEmail(payload);
 
-	const { accessToken, refreshToken, user, customer } = result;
+    const { accessToken, refreshToken, user, customer } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7
-	});
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: config.node_env === "development" ? false : true,
+        sameSite: config.node_env === "development" ? "lax" : "none",
+        maxAge: 1000 * 60 * 60 * 24
+    });
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: config.node_env === "development" ? false : true,
+        sameSite: config.node_env === "development" ? "lax" : "none",
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    });
 
-	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
-		success: true,
-		message: "Email Verified Successfully",
-		data: {
-			accessToken,
-			refreshToken,
-			user,
-			customer,
-		},
-	});
+    sendResponse(res, {
+        statusCode: httpStatus.CREATED,
+        success: true,
+        message: "Email Verified Successfully",
+        data: {
+            accessToken,
+            refreshToken,
+            user,
+            customer,
+        },
+    });
 });
 
 const loginUser = catchAsync(
@@ -138,15 +140,15 @@ const loginUser = catchAsync(
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: config.node_env === "development" ? false : true,
+            sameSite: config.node_env === "development" ? "lax" : "none",
             maxAge: 1000 * 60 * 60 * 24,
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: config.node_env === "development" ? false : true,
+            sameSite: config.node_env === "development" ? "lax" : "none",
             maxAge: 1000 * 60 * 60 * 24 * 7,
         });
 
@@ -214,8 +216,8 @@ const refreshToken = catchAsync(
             result.accessToken,
             {
                 httpOnly: true,
-                secure: false,
-                sameSite: "lax",
+                secure: config.node_env === "development" ? false : true,
+                sameSite: config.node_env === "development" ? "lax" : "none",
                 maxAge:
                     1000 * 60 * 60 * 24,
             },
@@ -226,8 +228,8 @@ const refreshToken = catchAsync(
             result.refreshToken,
             {
                 httpOnly: true,
-                secure: false,
-                sameSite: "lax",
+                secure: config.node_env === "development" ? false : true,
+                sameSite: config.node_env === "development" ? "lax" : "none",
                 maxAge:
                     1000 * 60 * 60 * 24 * 7,
             },
@@ -266,14 +268,14 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: "none",
+        secure: config.node_env === "development" ? false : true,
+        sameSite: config.node_env === "development" ? "lax" : "none",
         maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
     });
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: "none",
+        secure: config.node_env === "development" ? false : true,
+        sameSite: config.node_env === "development" ? "lax" : "none",
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 

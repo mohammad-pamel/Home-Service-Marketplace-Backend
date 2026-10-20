@@ -84,6 +84,8 @@ const registerUser = async (payload: IRegisterUserPayload) => {
         "src/templates/registration-user-otp.ejs",
     );
 
+    console.log("otp", otpValue)
+
     const templateData = {
 		name,
 		email,
@@ -124,6 +126,8 @@ const verifyCustomerEmail = async (payload: IVerifyEmailPayload) => {
 	const otpKey = `customer-registration-otp:${email}`;
 
 	const redisOtp = await redisClient.get(otpKey);
+
+    console.log(redisOtp)
 
 	if (!redisOtp) {
 		throw new AppError(httpStatus.BAD_REQUEST, "Invalid OTP");
