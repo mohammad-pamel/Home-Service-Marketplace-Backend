@@ -28,6 +28,12 @@ router.get(
   BookingController.getBookingById,
 );
 
+router.get(
+  "/",
+  auth(Role.ADMIN),
+  BookingController.getAllBookings
+);
+
 router.patch(
   "/:id",
   auth(Role.CUSTOMER),

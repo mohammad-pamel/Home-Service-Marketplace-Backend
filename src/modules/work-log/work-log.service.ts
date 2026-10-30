@@ -105,6 +105,40 @@ const createWorkLog = async (
   return workLog;
 };
 
+const getAllWorkLogs = async () => {
+  return prisma.workLog.findMany({
+    include: {
+      booking: {
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          serviceRequest: {
+            include: {
+              service: true,
+              location: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 const getMyWorkLogs = async (
   userId: string,
 ) => {
@@ -368,6 +402,7 @@ const completeWorkLog = async (
 
 export const WorkLogService = {
   createWorkLog,
+  getAllWorkLogs,
   getMyWorkLogs,
   getWorkLogsByBooking,
   updateWorkLog,

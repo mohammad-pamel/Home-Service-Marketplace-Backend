@@ -199,6 +199,28 @@ const deleteAvailability = async (
   return null;
 };
 
+const getAllAvailability = async () => {
+  return prisma.availability.findMany({
+    include: {
+      provider: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: [
+      { dayOfWeek: "asc" },
+      { startTime: "asc" },
+    ],
+  });
+};
+
 const getProviderAvailability = async (
   providerId: string,
 ) => {
@@ -229,5 +251,6 @@ export const AvailabilityService = {
   getMyAvailability,
   updateAvailability,
   deleteAvailability,
+  getAllAvailability,
   getProviderAvailability,
 };

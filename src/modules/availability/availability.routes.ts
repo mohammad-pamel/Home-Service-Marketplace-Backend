@@ -41,6 +41,12 @@ router.delete(
   AvailabilityController.deleteAvailability,
 );
 
+router.get(
+  "/",
+  auth(Role.ADMIN),
+  AvailabilityController.getAllAvailability,
+);
+
 // Public provider availability
 router.get(
   "/provider/:providerId",

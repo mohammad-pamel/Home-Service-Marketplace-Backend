@@ -21,6 +21,17 @@ const createWorkLog = catchAsync(
   },
 );
 
+const getAllWorkLogs = catchAsync(async (req, res) => {
+  const result = await WorkLogService.getAllWorkLogs();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All work logs retrieved successfully",
+    data: result,
+  });
+});
+
 const getMyWorkLogs = catchAsync(
   async (req, res) => {
     const userId = req.user!.userId;
@@ -125,6 +136,7 @@ const completeWorkLog = catchAsync(
 
 export const WorkLogController = {
   createWorkLog,
+  getAllWorkLogs,
   getMyWorkLogs,
   getWorkLogsByBooking,
   updateWorkLog,

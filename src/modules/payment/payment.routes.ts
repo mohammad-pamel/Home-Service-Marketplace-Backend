@@ -22,6 +22,19 @@ router.get(
   PaymentController.getMyPayments,
 );
 
+// Provider Payment History
+router.get(
+  "/provider/my-payments",
+  auth(Role.PROVIDER),
+  PaymentController.getMyProviderPayments,
+);
+
+router.get(
+  "/",
+  auth(Role.ADMIN),
+  PaymentController.getAllPayments,
+);
+
 router.get(
   "/bkash/callback",
   PaymentController.bkashCallback,

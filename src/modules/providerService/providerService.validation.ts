@@ -11,12 +11,26 @@ const CreateProviderServiceZodSchema = z.object({
     .optional(),
 });
 
-const UpdateProviderServiceZodSchema = z.object({
-  price: z
-    .number()
-    .positive("Price must be greater than 0")
-    .optional(),
-});
+// const UpdateProviderServiceZodSchema = z.object({
+//   price: z
+//     .number()
+//     .positive("Price must be greater than 0")
+//     .optional(),
+// });
+
+const UpdateProviderServiceZodSchema = z
+  .object({
+    price: z
+      .number()
+      .positive("Price must be greater than 0")
+      .optional(),
+  })
+  .refine(
+    (data) => data.price !== undefined,
+    {
+      message: "At least one field must be provided",
+    },
+  );
 
 export const ProviderServiceValidation = {
   CreateProviderServiceZodSchema,

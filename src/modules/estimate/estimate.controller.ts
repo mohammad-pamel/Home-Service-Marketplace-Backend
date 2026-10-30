@@ -37,6 +37,17 @@ const getMyProviderEstimates = catchAsync(
   },
 );
 
+const getAllEstimates = catchAsync(async (req, res) => {
+  const result = await EstimateService.getAllEstimates();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All estimates retrieved successfully",
+    data: result,
+  });
+});
+
 const getMyCustomerEstimates = catchAsync(
   async (req, res) => {
     const userId = req.user!.userId;
@@ -131,6 +142,7 @@ const rejectEstimate = catchAsync(async (req, res) => {
 export const EstimateController = {
   createEstimate,
   getMyProviderEstimates,
+  getAllEstimates,
   getMyCustomerEstimates,
   getEstimateById,
   updateEstimate,

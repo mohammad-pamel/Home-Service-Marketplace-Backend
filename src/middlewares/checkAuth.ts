@@ -68,14 +68,31 @@ export const auth = (...requiredRoles: Role[]) => {
         );
       }
 
-      const user = await prisma.user.findUnique({
-        where: {
-          id: userId,
-          email,
-          name,
-          role: role as Role,
-        },
-      });
+      
+const user = await prisma.user.findUnique({
+  where: {
+    id: userId,
+  },
+});
+
+if (!user) {
+  throw new Error("User not found. Please log in again.");
+}
+
+if (user.deletedAt) {
+  throw new Error("Your account has been deleted.");
+}
+
+// Validate current role from the database
+if (
+  requiredRoles.length &&
+  !requiredRoles.includes(user.role)
+) {
+  throw new Error(
+    "Forbidden. You don't have permission to access this resource.",
+  );
+}
+
 
       if (!user) {
         throw new Error(

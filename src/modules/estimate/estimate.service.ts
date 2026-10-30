@@ -193,6 +193,41 @@ const getMyProviderEstimates = async (
     });
 };
 
+const getAllEstimates = async () => {
+  return prisma.estimate.findMany({
+    include: {
+      items: true,
+      booking: {
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          serviceRequest: {
+            include: {
+              service: true,
+              location: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 const getMyCustomerEstimates = async (
     userId: string,
 ) => {
@@ -481,6 +516,7 @@ const rejectEstimate = async (
 export const EstimateService = {
     createEstimate,
     getMyProviderEstimates,
+    getAllEstimates,
     getMyCustomerEstimates,
     getEstimateById,
     updateEstimate,

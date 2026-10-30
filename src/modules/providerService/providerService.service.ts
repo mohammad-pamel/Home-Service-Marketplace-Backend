@@ -95,6 +95,7 @@ const getMyServices = async (userId: string) => {
       where: {
         providerId: provider.id,
         service: {
+          isActive: true,
           deletedAt: null,
         },
       },
@@ -220,6 +221,7 @@ const getProviderServices = async (
       where: {
         providerId,
         service: {
+          isActive: true,
           deletedAt: null,
         },
       },

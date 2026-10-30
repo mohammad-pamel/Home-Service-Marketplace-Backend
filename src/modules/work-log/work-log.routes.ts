@@ -17,6 +17,12 @@ router.post(
 );
 
 router.get(
+  "/",
+  auth(Role.ADMIN),
+  WorkLogController.getAllWorkLogs,
+);
+
+router.get(
   "/my-logs",
   auth(Role.PROVIDER),
   WorkLogController.getMyWorkLogs,

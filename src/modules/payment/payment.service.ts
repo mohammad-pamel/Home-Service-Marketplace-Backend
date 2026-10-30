@@ -248,6 +248,74 @@ const getMyPayments = async (userId: string) => {
   return payments;
 };
 
+
+// Get Provider Payments
+const getMyProviderPayments = async (userId: string) => {
+  const payments = await prisma.payment.findMany({
+    where: {
+      booking: {
+        providerId: userId,
+      },
+    },
+    include: {
+      booking: {
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          serviceRequest: {
+            include: {
+              service: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return payments;
+};
+
+const getAllPayments = async () => {
+  return prisma.payment.findMany({
+    include: {
+      booking: {
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          serviceRequest: {
+            include: {
+              service: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 const getPaymentById = async (
   userId: string,
   paymentId: string,
@@ -699,6 +767,8 @@ return {
 export const PaymentService = {
   createPayment,
   getMyPayments,
+  getMyProviderPayments,
+  getAllPayments,
   getPaymentById,
   updatePaymentStatus,
   handleBkashCallback,

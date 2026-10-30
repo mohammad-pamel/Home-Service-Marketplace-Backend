@@ -40,6 +40,32 @@ const getMyPayments = catchAsync(
   },
 );
 
+
+// Get My Provider Payments
+const getMyProviderPayments = catchAsync(async (req, res) => {
+  const userId = req.user!.userId;
+
+  const result = await PaymentService.getMyProviderPayments(userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Provider payments retrieved successfully",
+    data: result,
+  });
+});
+
+const getAllPayments = catchAsync(async (req, res) => {
+  const result = await PaymentService.getAllPayments();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All payments retrieved successfully",
+    data: result,
+  });
+});
+
 const getPaymentById = catchAsync(
   async (req, res) => {
     const userId = req.user!.userId;
@@ -127,6 +153,8 @@ const bkashCallback = catchAsync(
 export const PaymentController = {
   createPayment,
   getMyPayments,
+  getMyProviderPayments,
+  getAllPayments,
   getPaymentById,
   updatePaymentStatus,
   bkashCallback

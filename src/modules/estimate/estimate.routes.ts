@@ -17,10 +17,17 @@ router.post(
 );
 
 router.get(
+  "/",
+  auth(Role.ADMIN),
+  EstimateController.getAllEstimates,
+);
+
+router.get(
   "/provider",
   auth(Role.PROVIDER),
   EstimateController.getMyProviderEstimates,
 );
+
 
 router.get(
   "/customer",

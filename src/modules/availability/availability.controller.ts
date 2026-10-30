@@ -82,6 +82,20 @@ const deleteAvailability = catchAsync(
   },
 );
 
+const getAllAvailability = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await AvailabilityService.getAllAvailability();
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "All availability retrieved successfully",
+      data: result,
+    });
+  },
+);
+
 const getProviderAvailability = catchAsync(
   async (req: Request, res: Response) => {
     const providerId =
@@ -107,5 +121,6 @@ export const AvailabilityController = {
   getMyAvailability,
   updateAvailability,
   deleteAvailability,
+  getAllAvailability,
   getProviderAvailability,
 };
