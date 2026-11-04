@@ -11,6 +11,7 @@ import {
   ICreatePaymentPayload,
   IUpdatePaymentStatusPayload,
 } from "./payment.interface";
+import { randomUUID } from "crypto";
 
 const createPayment = async (
   userId: string,
@@ -133,7 +134,7 @@ const createPayment = async (
   const bkashIdToken = await getBkashIdToken();
 
   // Use booking ID directly as merchant invoice number
-  const merchantInvoiceNumber = booking.id;
+  const merchantInvoiceNumber = `HS-${randomUUID()}`;;
 
   const payerReference =
     booking.customer.phone ||
@@ -613,13 +614,13 @@ const handleBkashCallback = async (
 
   // Idempotency
   if (payment.status === "SUCCESS") {
-    return {
-      success: true,
-      message: "Payment already completed",
-      paymentId: payment.id,
-      bookingId: payment.bookingId,
-    };
-  }
+  return {
+    success: true,
+    message: "Payment already completed",
+    payment,
+    booking: payment.booking,
+  };
+}
 
   // Customer cancelled payment
   if (status === "cancel") {

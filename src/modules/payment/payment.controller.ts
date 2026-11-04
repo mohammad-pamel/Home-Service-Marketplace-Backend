@@ -1,3 +1,4 @@
+import config from "../../config";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { IBkashCallbackQuery } from "./payment.interface";
@@ -108,47 +109,103 @@ const updatePaymentStatus = catchAsync(
   },
 );
 
-const bkashCallback = catchAsync(
-  async (req, res) => {
-    const { paymentID, status } =
-      req.query as IBkashCallbackQuery;
+// const bkashCallback = catchAsync(
+//   async (req, res) => {
+//     const { paymentID, status } =
+//       req.query as IBkashCallbackQuery;
 
-    const result =
-      await PaymentService.handleBkashCallback(
-        paymentID as string,
-        status as string,
-      );
+//     const result =
+//       await PaymentService.handleBkashCallback(
+//         paymentID as string,
+//         status as string,
+//       );
 
-    if (result.success) {
-      // return res.status(httpStatus.OK).json({
-      //   success: true,
-      //   message: result.message,
-      //   data: result,
-      // });
+//     if (result.success) {
+//       // return res.status(httpStatus.OK).json({
+//       //   success: true,
+//       //   message: result.message,
+//       //   data: result,
+//       // });
 
-      sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: result.message,
-        data: result,
-      });
+//       sendResponse(res, {
+//         statusCode: 200,
+//         success: true,
+//         message: result.message,
+//         data: result,
+//       });
+//     }
+
+//     // return res.status(httpStatus.OK).json({
+//     //   success: false,
+//     //   message: result.message,
+//     //   data: result,
+//     // });
+
+//     sendResponse(res, {
+//       statusCode: 500,
+//       success: true,
+//       message: result.message,
+//       data: result,
+//     });
+
+//   },
+// );
+
+
+
+const bkashCallback = catchAsync(async (req, res) => {
+  const { paymentID, status } = req.query as IBkashCallbackQuery;
+
+  const result = await PaymentService.handleBkashCallback(
+    paymentID as string,
+    status as string
+  );
+
+  const frontendUrl = config.frontend_url || "http://localhost:3000";
+
+  const payment = result.payment;
+
+  let redirectPath = "/customer/payments/failed";
+
+  if (result.success) {
+    redirectPath = "/customer/payments/success";
+  } else if (status === "cancel") {
+    redirectPath = "/customer/payments/cancel";
+  }
+
+  const redirectUrl = new URL(redirectPath, frontendUrl);
+
+  if (payment) {
+    redirectUrl.searchParams.set("paymentId", payment.id);
+    redirectUrl.searchParams.set("bookingId", payment.bookingId);
+
+    if (payment.bkashTrxId) {
+      redirectUrl.searchParams.set("trxId", payment.bkashTrxId);
     }
 
-    // return res.status(httpStatus.OK).json({
-    //   success: false,
-    //   message: result.message,
-    //   data: result,
-    // });
+    redirectUrl.searchParams.set("amount", String(payment.amount));
 
-    sendResponse(res, {
-      statusCode: 500,
-      success: true,
-      message: result.message,
-      data: result,
-    });
+    if (payment.paidAt) {
+      redirectUrl.searchParams.set(
+        "paidAt",
+        payment.paidAt.toISOString()
+      );
+    }
+  } else {
+    // Handles an already completed payment response.
+    if ("paymentId" in result && result.paymentId) {
+      redirectUrl.searchParams.set("paymentId", result.paymentId as string);
+    }
 
-  },
-);
+    if ("bookingId" in result && result.bookingId) {
+      redirectUrl.searchParams.set("bookingId", result.bookingId as string);
+    }
+  }
+
+  return res.redirect(302, redirectUrl.toString());
+});
+
+
 
 export const PaymentController = {
   createPayment,

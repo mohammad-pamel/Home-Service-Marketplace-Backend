@@ -393,6 +393,17 @@ const completeWorkLog = async (
           },
         });
 
+        await tx.serviceProviderProfile.update({
+  where: {
+    userId: workLog.booking.providerId,
+  },
+  data: {
+    totalJobs: {
+      increment: 1,
+    },
+  },
+});
+
         return completedWorkLog;
       },
     );

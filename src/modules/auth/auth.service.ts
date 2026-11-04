@@ -5,8 +5,8 @@ import {
     IForgotPasswordPayload,
     IGoogleLoginPayload,
     ILoginUserPayload,
-    IRegisterCustomerPayload,
     IRegisterUserPayload,
+    IRegisterUserVerificationPayload,
     IResetPasswordPayload,
     IUpdateProfilePayload,
     IVerifyEmailPayload,
@@ -26,7 +26,7 @@ import httpStatus from "http-status";
 
 
 const registerUser = async (payload: IRegisterUserPayload) => {
-    const { name, password, phone } = payload;
+    const { name, password, phone, role = Role.CUSTOMER } = payload;
 
     const email = payload.email
         .trim()
@@ -65,7 +65,9 @@ const registerUser = async (payload: IRegisterUserPayload) => {
     const redisUserDataPayload = {
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        phone,
+        role,
     };
 
     await redisClient.set(
@@ -147,27 +149,58 @@ const verifyCustomerEmail = async (payload: IVerifyEmailPayload) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Patient Doesnt Exist");
 	}
 
-	const customerPayload: IRegisterCustomerPayload = JSON.parse(redisCustomerData as string);
+	// const customerPayload: IRegisterCustomerPayload = JSON.parse(redisCustomerData as string);
+    const registrationPayload: IRegisterUserVerificationPayload =
+    JSON.parse(redisCustomerData as string);
 
-	const createdUser = await prisma.user.create({
-		data: {
-			name: customerPayload.name,
-			email: customerPayload.email,
-			password: customerPayload.password,
-			role: Role.CUSTOMER,
-			status: UserStatus.ACTIVE,
-			emailVerified: true,
-			customer: {
-				create: {
-					name: customerPayload.name,
-					email: customerPayload.email,
-					contactNumber: customerPayload?.customer?.contactNumber || "",
-				},
-			},
-		},
-		omit: { password: true },
-		include: { customer: true },
-	});
+	// const createdUser = await prisma.user.create({
+	// 	data: {
+	// 		name: customerPayload.name,
+	// 		email: customerPayload.email,
+	// 		password: customerPayload.password,
+	// 		role: Role.CUSTOMER,
+	// 		status: UserStatus.ACTIVE,
+	// 		emailVerified: true,
+	// 		customer: {
+	// 			create: {
+	// 				name: customerPayload.name,
+	// 				email: customerPayload.email,
+	// 				contactNumber: customerPayload?.customer?.contactNumber || "",
+	// 			},
+	// 		},
+	// 	},
+	// 	omit: { password: true },
+	// 	include: { customer: true },
+	// });
+
+    const createdUser = await prisma.user.create({
+    data: {
+        name: registrationPayload.name,
+        email: registrationPayload.email,
+        password: registrationPayload.password,
+        phone: registrationPayload.phone,
+        role: registrationPayload.role,
+        status: UserStatus.ACTIVE,
+        emailVerified: true,
+
+        ...(registrationPayload.role === Role.CUSTOMER
+            ? {
+                customer: {
+                    create: {
+                        name: registrationPayload.name,
+                        email: registrationPayload.email,
+                        contactNumber: registrationPayload.phone,
+                    },
+                },
+            }
+            : {}),
+    },
+    omit: { password: true },
+    include: {
+        customer: true,
+        provider: true,
+    },
+});
 
 	await redisClient.del(customerRegistrationKey);
 

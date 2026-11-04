@@ -21,13 +21,21 @@ export interface ILoginUserPayload {
   password: string;
 }
 
-export interface IRegisterCustomerPayload {
-	name: string;
-	email: string;
-	password: string;
-	customer: {
-		contactNumber?: string;
-	};
+// export interface IRegisterCustomerPayload {
+// 	name: string;
+// 	email: string;
+// 	password: string;
+// 	customer: {
+// 		contactNumber?: string;
+// 	};
+// }
+
+export interface IRegisterUserVerificationPayload {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    role: Role;
 }
 
 export interface IRefreshTokenPayload {
