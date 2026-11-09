@@ -245,19 +245,42 @@ const refreshToken = catchAsync(
     },
 );
 
-const logout = catchAsync(
-    async (_req: Request, res: Response) => {
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
+// const logout = catchAsync(
+//     async (_req: Request, res: Response) => {
+//         res.clearCookie("accessToken");
+//         res.clearCookie("refreshToken");
 
-        sendResponse(res, {
-            statusCode: httpStatus.OK,
-            success: true,
-            message: "Logged out successfully",
-            data: null,
-        });
-    },
+//         sendResponse(res, {
+//             statusCode: httpStatus.OK,
+//             success: true,
+//             message: "Logged out successfully",
+//             data: null,
+//         });
+//     },
+// );
+
+
+const logout = catchAsync(
+  async (_req: Request, res: Response) => {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: config.node_env === "development" ? false : true,
+      sameSite: config.node_env === "development" ? "lax" as const : "none" as const,
+      path: "/",
+    };
+
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Logged out successfully",
+      data: null,
+    });
+  },
 );
+
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
