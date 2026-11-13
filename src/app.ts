@@ -24,11 +24,23 @@ import { UserRoutes } from "./modules/user/user.routes";
 
 const app: Application = express();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://home-service-marketplace-frontend.vercel.app",
+  config.frontend_url,
+].filter(Boolean);
+
 app.use(
-	cors({
-		origin: config.frontend_url,
-		credentials: true,
-	}),
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
+    credentials: true,
+  }),
 );
 
 // Enable URL-encoded form data parsing
